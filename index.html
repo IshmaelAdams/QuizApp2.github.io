@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+    
+    <!-- first Page -->
+    <div id="rules">
+        <div class="title">
+            <h2>General Knowledge Quiz</h2>
+        </div>
+    </div>
+    
+    <h5 class="numb">(<span id="number">0</span> of 5)</h5>
+    <div class ="rules">
+        <h3>Some rules for the quiz</h3>
+        <p> You  have only <span>30 seconds</span> for all the 5 questions.<br>
+            You can't reslect after you have picked. <br>
+            You earn points based on correct answers and <br>
+            can't exit or go back after you start.
+        </p>
+        <button id="start" class="btnstart"><h5>start the Quiz</h5></button>
+    </div>
+    
+
+    <!-- Quiz Page -->
+    
+    
+
+    <div id="main">
+        <div class="time">
+            <h5 class="timetxt">Time: <span id="time">00</span></h5>
+        </div>
+        <div class="questn">
+            <h5 id="questions"></h5>
+        </div>
+        <div id="option" class="btn_option">
+            <button  id="option1"></button><br><br>
+            <button  id="option2"></button><br><br>
+            <button  id="option3"></button>
+        </div>
+    </div>
+    <button class="btn_next" id="next">next</button>
+    <!-- Result Page--> 
+    <div class="result">
+        <h2>You had <span id="correct">3</span> correct out of 5</h2><br>
+        <h1>Congrats </h1>
+    </div>
+    
+
+    <div class="fini">
+        <button id="finish">Finish</button>
+    </div>
+</div>
+
+<script>
+
+    // Variables
+    
+    var count = 0;
+    var marks = 0;
+    var answer = [];
+    var time = 30;
+    var timer ;
+
+    // ready function
+
+    $(document).ready(function(){
+        $('.time').hide();
+        $('.result').hide();
+        $('.btn_next').hide();
+        $('#finish').hide();
+        $('.numb').hide();
+
+        $('#start').click(function(){
+            $('.rules').hide();
+            $('#start').hide();
+            $('.time').show();
+            $('.numb').show();
+            btnManager();
+            
+        })
+
+
+        // button function
+
+        function btnManager() {
+            if(count == 4){
+                $('.btn_next').hide();
+                $('#finish').show();
+            }
+            else{
+                $('.btn_next').show();
+            }
+            
+        }
+
+        // Question function
+
+        function addQuestion(data,i){
+            $('#questions').text(data[i].Quiz);
+            $('#option1').text(data[i].option1);
+            $('#option2').text(data[i].option2);
+            $('#option3').text(data[i].answer);
+            $('#number').text(Number(i + 1));
+        };
+
+        // answer function
+
+        function selectedAnswer() {
+            for (let i = 0; i < 3; i++) {
+                var a = document.getElementById("option").children;
+                if (a[i].innerHTML == data[i].answer[count]) {
+                    $("#option").children("button")[i].classList.add("active");
+                }
+                else{
+                    $("#option").children("button")[i].classList.remove("active");
+                }
+
+            }
+        };
+
+        // result function
+
+        function result(data) {
+            for (let i = 0; i < answer.length; i++) {
+                marks += 5;
+            }
+            $('.numb').hide();
+            $('#main').hide();
+            $('.btn_next').hide();
+
+            // $('marks').text(marks);
+            $("#correct").text(marks / 5);
+            
+            $(".result").show();
+        };
+        $("#option").hide();
+
+        // attach API
+
+        fetch('data.json').then(function(response) {
+            return response.json();
+        })
+        .then(function(data){
+            $('#start').click(function() {
+                $('#option').show();
+                addQuestion(data.Questions,count);
+                $('.rules').hide();
+
+                timer = setInterval(timerFunction ,1000);
+
+                function timerFunction() {
+                    $('#time').text(time);
+                    if (time < 1) {
+                        clearInterval(timer);
+                        alert("Out of time");
+                        result();
+                        $("#main").hide();
+                        $("#finish").hide();
+                        $(".result").show();
+                    }
+                    time--;
+                }
+            });
+            
+            // select Option
+
+            $("#option").click(function() {
+                answer[count] = $(this).html();
+                $(this).addClass("active");
+                $(this).siblings().removeClass("active");
+            })
+
+            // next Question
+
+            $('#next').click(function () {
+                if (count > answer.length - 1) {
+                    alert("select atleast 1 option");
+                }
+                else{
+                    count++;
+                    addQuestion(data.Questions,count);
+                    $("#option").removeClass("active");
+                    btnManager();
+                    selectedAnswer();
+                }
+            });
+
+
+            // Finish quiz
+
+            $("#finish").click(function () {
+                if (count > answer.length - 1) {
+                    alert("select atleast 1 option");
+                }
+                else{
+                    result();
+                    clearInterval(timer);
+                    $("#finish").hide();
+                    $(".result").show();
+                }
+            })
+        })
+
+
+    })
+
+
+
+</script>
+
+
+<script
+src="https://code.jquery.com/jquery-3.2.1.min.js"
+integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+crossorigin="anonymous"></script>
+</body>
+</html>
